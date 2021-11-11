@@ -169,7 +169,6 @@ func (cl *Client) GetStatementJSON(ticketNumber, password string) (st JSONStatem
 
 	if resp.isSuccessful() {
 		if resp.resultIsString() {
-			// todo unmarshal the string into a statement object
 			statementString := strings.Trim(resp.getResultString(), `\`)
 			err = json.Unmarshal([]byte(statementString), &st)
 			return

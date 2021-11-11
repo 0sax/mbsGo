@@ -1,5 +1,14 @@
 package mbsGo
 
+// All the unnecessary looking methods for the response objects
+// are here because someone at Wallz & Queen has never
+// used a statically typed language. Anyway, I'm still alive sha
+// glory be to the motherboard.
+//
+// Please, I don't know who needs to hear this but, a field in an
+// api response should NEVER return more than one data type. If you
+// gave been doing this, please say no to cultism.
+
 type RequestStatementResponse struct {
 	Status  string      `json:"status"`
 	Message string      `json:"message"`
