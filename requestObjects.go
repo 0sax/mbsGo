@@ -1,5 +1,10 @@
 package mbsGo
 
+import (
+	"github.com/0sax/err2"
+	"github.com/thoas/go-funk"
+)
+
 type StatementRequestObject struct {
 	AccountNo     string `json:"accountNo"`
 	BankId        int    `json:"bankId"`
@@ -16,8 +21,20 @@ type StatementRequestObject struct {
 	} `json:"applicants"`
 }
 
-//TODO
-//	Add Validators
+func (sro *StatementRequestObject) Validate() (err error) {
+	var errs err2.ErrList
+	//TODO
+	//	Add Validators
+
+	if !funk.ContainsString(statementRequestRoles(), sro.Role) {
+		errs.AddF("role '%v' is not a valid role", sro.Role)
+	}
+
+	if errs.HasErrs() {
+		err = errs.ErrsAsError()
+	}
+	return
+}
 
 type ConfirmStatementRequest struct {
 	TicketNo string `json:"ticketNo"`

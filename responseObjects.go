@@ -1,5 +1,11 @@
 package mbsGo
 
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
 // All the unnecessary looking methods for the response objects
 // are here because someone at Wallz & Queen has never
 // used a statically typed language. Anyway, I'm still alive sha
@@ -9,72 +15,64 @@ package mbsGo
 // api response should NEVER return more than one data type. If you
 // have been doing this, please say no to cultism today.
 
-type RequestStatementResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Result  interface{} `json:"result"` // int or string array
+type Response struct {
+	Status  string          `json:"status"`
+	Message string          `json:"message"`
+	Result  json.RawMessage `json:"result"`
 }
 
-func (r *RequestStatementResponse) isSuccessful() bool {
+func (r *Response) isSuccessful() bool {
 	return r.Status == "00"
 }
-
-func (r *RequestStatementResponse) resultIsString() bool {
-	_, ok := r.Result.(string)
-	return ok
-}
-
-func (r *RequestStatementResponse) getResultString() string {
-	if r.resultIsString() {
-		return r.Result.(string)
+func (r *Response) errors() (errs []string, err error) {
+	if r.Result != nil {
+		err = json.Unmarshal([]byte(r.Result), &errs)
+		if err != nil {
+			err = fmt.Errorf("response.errors() unmarshal failed because: %v", err.Error())
+		}
 	}
-	return ""
-}
-
-func (r *RequestStatementResponse) getResultId() int {
-	if r.isSuccessful() {
-		return r.Result.(int)
-	}
-	return 0
-}
-
-func (r *RequestStatementResponse) getErrors() (s []string) {
-	r1 := r.Result.([]interface{})
-
-	for _, e := range r1 {
-		s = append(s, e.(string))
-	}
-
 	return
 }
-
-type RequestIDFeedbackResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-	Result  struct {
-		Status   string `json:"status"`
-		Feedback string `json:"feedback"`
-	} `json:"result"`
+func (r *Response) requestId() (rId int, err error) {
+	err = json.Unmarshal([]byte(r.Result), &rId)
+	return
 }
-
-func (r *RequestIDFeedbackResponse) isSuccessful() bool {
-	return r.Status == "00"
+func (r *Response) bankList() (bl []Bank, err error) {
+	err = json.Unmarshal([]byte(r.Result), &bl)
+	return
 }
-
-type BankListResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-	Result  []Bank `json:"result"`
+func (r *Response) feedBack() (fb *Feedback, err error) {
+	err = json.Unmarshal([]byte(r.Result), &fb)
+	return
 }
+func (r *Response) jsonStatementObject() (js *JSONStatement, err error) {
+	var jsStr string
+	err = json.Unmarshal([]byte(r.Result), &jsStr)
+	if err != nil {
+		return
+	}
 
-func (r *BankListResponse) isSuccessful() bool {
-	return r.Status == "00"
+	statementString := strings.Trim(jsStr, `\`)
+	err = json.Unmarshal([]byte(statementString), &js)
+	return
+}
+func (r *Response) pdfStatementString() (ps string, err error) {
+	err = json.Unmarshal([]byte(r.Result), &ps)
+	if err != nil {
+		return
+	}
+	return
 }
 
 type Bank struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
 	SortCode string `json:"sortCode"`
+}
+
+type Feedback struct {
+	Status   string `json:"status"`
+	Feedback string `json:"feedback"`
 }
 
 type JSONStatement struct {
