@@ -11,6 +11,7 @@ const (
 	BaseUrl                        = "https://mybankstatement.net/TP/api"
 	RequestStatementEndpoint       = "/RequestStatement"
 	GetFeedbackByRequestIdEndpoint = "/GetFeedbackByRequestID"
+	GetFeedbackByTicketNoEndpoint  = "/GetFeedbackByTicketNo"
 	ConfirmStatementEndpoint       = "/ConfirmStatement"
 	ReConfirmStatementEndpoint     = "/ReconfirmStatement"
 	ListBanksEndpoint              = "/SelectActiveRequestBanks"
@@ -100,6 +101,42 @@ func (cl *Client) GetFeedbackByRequestID(reqID int) (status, feedback string, er
 	var resp Response
 
 	err = cl.standardRequest(http.MethodPost, GetFeedbackByRequestIdEndpoint, reqIDWrap, &resp)
+	if err != nil {
+		return
+	}
+
+	if resp.isSuccessful() {
+		fb, ee := resp.feedBack()
+		if ee != nil {
+			err = ee
+			return
+		}
+		status = fb.Status
+		feedback = fb.Feedback
+		return
+	}
+
+	ee, err := resp.errors()
+	if err != nil {
+		return
+	}
+
+	m := fmt.Sprintf("%v, %v", resp.Message, ee)
+
+	err = err2.NewClientErr(errors.New(m), m, 400)
+	//fmt.Printf("hoohoh : %v", m)
+	return
+}
+
+func (cl *Client) GetFeedbackByTicketNo(ticketNo string) (status, feedback string, err error) {
+
+	ticketNoWrap := &TicketNo{
+		ticketNo,
+	}
+
+	var resp Response
+
+	err = cl.standardRequest(http.MethodPost, GetFeedbackByTicketNoEndpoint, ticketNoWrap, &resp)
 	if err != nil {
 		return
 	}

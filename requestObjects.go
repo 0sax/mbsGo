@@ -44,3 +44,7 @@ type ConfirmStatementRequest struct {
 type RequestId struct {
 	RequestId int `json:"requestId"`
 }
+
+type TicketNo struct {
+	TicketNo string `json:"ticketNo"`
+}
