@@ -1,4 +1,4 @@
-module mbsGo
+module github.com/0sax/mbsGo
 
 go 1.15
 
