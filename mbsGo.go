@@ -31,13 +31,17 @@ type Client struct {
 	clientId     string
 	clientSecret string
 	baseUrl      string
+	userName string
+	country string
 }
 
-func NewClient(baseUrl, clientId, clientSecret string) *Client {
+func NewClient(baseUrl, clientId, clientSecret, userName, country string) *Client {
 	return &Client{
 		clientId:     clientId,
 		clientSecret: clientSecret,
 		baseUrl:      baseUrl,
+		userName: userName,
+		country: country,
 	}
 }
 
@@ -53,6 +57,24 @@ func NewStatementRequestObject(bankId int, accountNo, destinationId, startDate, 
 		Country:       country,
 		Phone:         phone,
 		Applicants: []struct {
+			Name          string `json:"name"`
+			ApplicationNo string `json:"applicationNo"`
+		}{{applicantName, ""}},
+	}
+}
+
+func (cl *Client) NewStatementRequestObjectWithClientDefaults(bankId int, accountNo, startDate, endDate, role, applicantName, phone string) *StatementRequestObject {
+	return &StatementRequestObject{
+		AccountNo:     accountNo,
+		BankId:        bankId,
+		DestinationId: cl.clientId,
+		StartDate:     startDate,
+		EndDate:       endDate,
+		Role:          role,
+		Username:      cl.userName,
+		Country:       cl.country,
+		Phone:         phone,
+		Applicants:    []struct {
 			Name          string `json:"name"`
 			ApplicationNo string `json:"applicationNo"`
 		}{{applicantName, ""}},
